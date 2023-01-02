@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 
+const { default: JSDOMEnvironment } = require("jest-environment-jsdom");
 const {
   game,
   newGame,
@@ -10,6 +11,10 @@ const {
   showTurns,
   playerTurn,
 } = require("../game.js");
+
+jest.spyOn(window, "alert").mockImplementation(() => {
+
+})
 
 beforeAll(() => {
   let fs = require("fs");
@@ -34,6 +39,12 @@ describe("game object contains correct keys", () => {
   });
   test("choices key exists", () => {
     expect("choices" in game).toBe(true);
+  });
+  test("turnInProgress key exists", () => {
+    expect("turnInProgress" in game).toBe(true);
+  });
+  test("lastButton key exists", () => {
+    expect("lastButton" in game).toBe(true);
   });
   test("choices contain correct ids", () => {
     expect(game.choices).toEqual(["button1", "button2", "button3", "button4"]);
@@ -106,4 +117,22 @@ describe("gameplay works correctly", () => {
     playerTurn();
     expect(game.score).toBe(1);
   });
+
+  test("should call an alert if the move is wrong", () => {
+    game.playerMoves.push("wrong")
+    playerTurn()
+    expect(window.alert).toBeCalledWith("Wrong move!")
+  })
+
+  test("turnInProgress should be true during showTurns function", () => {
+    showTurns()
+    expect(game.turnInProgress).toBe(true)
+  })
+
+  test("clicking during computer sequence should fail", () => {
+    showTurns();
+    game.lastButton = "";
+    document.getElementById("button2").click()
+    expect(game.lastButton).toEqual("")
+  })
 });
